@@ -1,7 +1,7 @@
 name: Debug Build Process
 
 on:
-  workflow_dispatch: # Manuális indítás lehetősége
+  workflow_dispatch: # Manuális indítás
   push:
     branches:
       - main
@@ -14,18 +14,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Install dependencies
+      - name: Install required dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-dev python3-setuptools swig
 
-      - name: Run build with verbose output
+      - name: Ensure OpenWrt directory exists
+        run: |
+          if [ ! -d "openwrt" ]; then
+            git clone https://github.com/openwrt/openwrt.git openwrt
+          fi
+
+      - name: Clean previous builds
         run: |
           cd openwrt
           make clean
+
+      - name: Run build with verbose output
+        run: |
+          cd openwrt
           make V=s
