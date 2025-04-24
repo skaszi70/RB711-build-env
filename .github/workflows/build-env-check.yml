@@ -1,4 +1,42 @@
-- name: Install required dependencies
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y python3-dev python3-setuptools swig libpam0g-dev libsnmp-dev
+name: Debug Build Process
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  debug-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Ellenőrizzük a repository-t
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Függőségek telepítése
+      - name: Install required dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-dev python3-setuptools swig libpam0g-dev libsnmp-dev
+
+      # OpenWrt könyvtár ellenőrzése és beállítása
+      - name: Ensure OpenWrt directory exists
+        run: |
+          if [ ! -d "openwrt" ]; then
+            git clone https://github.com/openwrt/openwrt.git openwrt
+          fi
+
+      # Előző build tisztítása
+      - name: Clean previous builds
+        run: |
+          cd openwrt
+          make clean
+
+      # Non-interaktív build folyamat
+      - name: Run non-interactive build
+        run: |
+          cd openwrt
+          make defconfig
+          make V=s
