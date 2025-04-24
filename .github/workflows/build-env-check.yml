@@ -1,7 +1,7 @@
 name: Debug Build Process
 
 on:
-  workflow_dispatch: # Manuális indítás
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -17,7 +17,7 @@ jobs:
       - name: Install required dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-dev python3-setuptools swig
+          sudo apt-get install -y python3-dev python3-setuptools swig libpam0g-dev libsnmp-dev
 
       - name: Ensure OpenWrt directory exists
         run: |
@@ -30,7 +30,8 @@ jobs:
           cd openwrt
           make clean
 
-      - name: Run build with verbose output
+      - name: Run non-interactive build
         run: |
           cd openwrt
+          make defconfig
           make V=s
