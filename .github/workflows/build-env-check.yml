@@ -31,13 +31,13 @@ jobs:
         run: |
           cd openwrt
           echo "🔍 Target configuration check:"
-          cat .config | grep CONFIG_TARGET
+          cat .config | grep CONFIG_TARGET || echo "⚠ Nincs célhardver beállítva!"
 
       - name: Debug build log analysis
         run: |
           cd openwrt
           echo "🔍 Checking build logs..."
-          grep -i "target" build.log || echo "No target information found!"
+          grep -i "target" build.log || echo "⚠ Nincs célhardver információ a logban!"
 
       - name: Debug dependencies
         run: |
