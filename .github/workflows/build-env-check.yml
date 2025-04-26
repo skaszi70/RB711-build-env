@@ -1,23 +1,44 @@
-name: OpenWrt Debug Build
+name: Test OpenWrt Build.yml Structure
 
 on:
   workflow_dispatch:
 
 jobs:
-  debug:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Show uploaded .config
+      - name: Install dummy dependencies
         run: |
-          cat .config
+          echo "Dummy apt install to test syntax"
+          sudo apt update
+          sudo apt install -y cowsay
 
-      - name: Check selected target
+      - name: Simulate OpenWrt clone
         run: |
-          grep CONFIG_TARGET .config
+          echo "Simulating OpenWrt clone"
+          mkdir openwrt
+          cd openwrt
+          echo "Simulating feeds update/install"
+          echo "Done"
 
-      - name: List selected device
+      - name: Simulate patch apply
         run: |
-          grep CONFIG_TARGET_ath79_generic_DEVICE_ .config
+          echo "Simulating patch copy"
+
+      - name: Simulate config copy
+        run: |
+          echo "Simulating .config copy"
+
+      - name: Simulate build
+        run: |
+          cd openwrt
+          echo "Running make defconfig (simulated)"
+          echo "Running make -j1 V=sc (simulated)"
+
+      - name: Simulate firmware upload
+        run: |
+          echo "Simulating artifact upload"
