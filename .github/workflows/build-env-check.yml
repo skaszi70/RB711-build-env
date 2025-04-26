@@ -1,39 +1,23 @@
 name: OpenWrt Debug Build
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
 
 jobs:
-  debug_build:
+  debug:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up build environment
+      - name: Show uploaded .config
         run: |
-          sudo apt update && sudo apt install -y build-essential libncurses5-dev zlib1g-dev gawk git
+          cat .config
 
-      - name: Clone OpenWrt repository
+      - name: Check selected target
         run: |
-          git clone https://github.com/openwrt/openwrt.git
-          cd openwrt
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          grep CONFIG_TARGET .config
 
-      - name: Run menuconfig
+      - name: List selected device
         run: |
-          cd openwrt
-          make menuconfig || echo "menuconfig failed!"
-
-      - name: Start build (without optimization)
-        run: |
-          cd openwrt
-          make -j$(nproc) || echo "Build failed!"
-
-      - name: Upload logs
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-logs
-          path: openwrt/logs
-
+          grep CONFIG_TARGET_ath79_generic_DEVICE_ .config
