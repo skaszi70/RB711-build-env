@@ -1,45 +1,39 @@
-name: OpenWrt Debug for Mikrotik RB711
+name: OpenWrt Debug Build
 
-on:
-  workflow_dispatch:
+on: [workflow_dispatch]
 
 jobs:
-  debug:
+  debug_build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Set up build environment
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential git libncurses5-dev libssl-dev zlib1g-dev
+          sudo apt update && sudo apt install -y build-essential libncurses5-dev zlib1g-dev gawk git
 
-      - name: Clone OpenWrt source
+      - name: Clone OpenWrt repository
         run: |
-          git clone --depth=1 https://github.com/openwrt/openwrt.git
+          git clone https://github.com/openwrt/openwrt.git
           cd openwrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Copy custom .config
-        run: |
-          cp $GITHUB_WORKSPACE/.config openwrt/.config
-
-      - name: Debug target configuration
+      - name: Run menuconfig
         run: |
           cd openwrt
-          echo "🔍 Target configuration check:"
-          cat .config | grep CONFIG_TARGET || echo "⚠ Nincs célhardver beállítva!"
+          make menuconfig || echo "menuconfig failed!"
 
-      - name: Debug build log analysis
+      - name: Start build (without optimization)
         run: |
           cd openwrt
-          echo "🔍 Checking build logs..."
-          grep -i "target" build.log || echo "⚠ Nincs célhardver információ a logban!"
+          make -j$(nproc) || echo "Build failed!"
 
-      - name: Debug dependencies
-        run: |
-          echo "🔍 Checking installed dependencies..."
-          dpkg -l | grep -E "build-essential|libncurses5-dev|libssl-dev|zlib1g-dev"
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-logs
+          path: openwrt/logs
+
